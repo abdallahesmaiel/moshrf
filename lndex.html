@@ -1,0 +1,878 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>توشكى | لوحة تحكم المشرف</title>
+  
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
+  
+  <style>
+    :root {
+      --primary-color: #0b4b66;
+      --primary-light: #e7f1fb;
+      --secondary-color: #1d74b3;
+      --bg-gradient: linear-gradient(135deg, #f4f7fc 0%, #eef2f9 100%);
+      --text-main: #1a2f40;
+      --text-muted: #5c6f84;
+      --card-bg: #ffffff;
+      --border-color: #d7e3f0;
+      --radius-lg: 24px;
+      --radius-md: 16px;
+      --danger: #c24145;
+      --danger-light: #fff2f2;
+      --success: #27a770;
+      --success-light: #edfbf4;
+      --warning: #f39c12;
+      --warning-light: #fef5e7;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+    }
+
+    body {
+      font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      min-height: 100vh;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    /* بار مراقبة الشبكة والاتصال */
+    .network-status-bar {
+      width: 100%;
+      max-width: 900px;
+      padding: 10px 16px;
+      border-radius: 12px;
+      margin-bottom: 14px;
+      font-weight: 600;
+      font-size: 0.9rem;
+      display: flex;
+      align-items: center;
+      transition: all 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+    }
+    .network-status-bar.online {
+      background: var(--success-light);
+      color: var(--success);
+      border: 1px solid #c3edd7;
+    }
+    .network-status-bar.offline {
+      background: var(--danger-light);
+      color: var(--danger);
+      border: 1px solid #f8d7da;
+    }
+    .network-status-bar.weak {
+      background: var(--warning-light);
+      color: var(--warning);
+      border: 1px solid #fcd8a5;
+    }
+
+    .container {
+      max-width: 900px;
+      width: 100%;
+      background: var(--card-bg);
+      border-radius: var(--radius-lg);
+      box-shadow: 0 12px 34px rgba(11, 75, 102, 0.08);
+      padding: 28px 24px;
+    }
+
+    /* هيدر المشرف */
+    .header-card {
+      background: linear-gradient(135deg, #0b4b66 0%, #175e7d 100%);
+      border-radius: var(--radius-md);
+      padding: 24px;
+      margin-bottom: 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      color: white;
+      box-shadow: 0 8px 20px rgba(11, 75, 102, 0.2);
+    }
+
+    .header-info {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .admin-icon {
+      background: rgba(255, 255, 255, 0.15);
+      border-radius: var(--radius-md);
+      width: 54px;
+      height: 54px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.8rem;
+    }
+
+    .header-text h2 {
+      font-size: 1.4rem;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+
+    .header-text p {
+      color: rgba(255, 255, 255, 0.8);
+      font-size: 0.85rem;
+    }
+
+    .refresh-btn {
+      background: rgba(255, 255, 255, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.3);
+      color: white;
+      padding: 10px 16px;
+      border-radius: 12px;
+      cursor: pointer;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+    .refresh-btn:hover { background: white; color: var(--primary-color); }
+
+    /* قسم الفلترة */
+    .filter-card {
+      background: #fafcfe;
+      border-radius: var(--radius-md);
+      padding: 20px;
+      margin-bottom: 24px;
+      border: 1px solid var(--border-color);
+    }
+
+    .label-icon {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 600;
+      color: var(--primary-color);
+      margin-bottom: 12px;
+      font-size: 0.95rem;
+    }
+
+    .custom-select {
+      position: relative;
+      background: white;
+      border: 1.5px solid var(--border-color);
+      border-radius: 12px;
+      padding: 14px 16px;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      transition: all 0.25s;
+    }
+
+    .arrow-icon {
+      font-size: 0.8rem;
+      color: var(--text-muted);
+      transition: transform 0.2s;
+    }
+    .arrow-icon.open { transform: rotate(180deg); }
+
+    .options-container {
+      position: absolute;
+      top: calc(100% + 6px);
+      right: 0;
+      width: 100%;
+      background: white;
+      border-radius: 14px;
+      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      border: 1px solid var(--border-color);
+      max-height: 220px;
+      overflow-y: auto;
+      z-index: 100;
+      display: none;
+      padding: 6px;
+    }
+    .options-container.show { display: block; animation: selectFade 0.2s ease; }
+
+    @keyframes selectFade {
+      from { opacity: 0; transform: translateY(-5px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .option-item {
+      padding: 12px 16px;
+      cursor: pointer;
+      border-radius: 8px;
+      transition: all 0.15s;
+    }
+    .option-item:hover { background: var(--primary-light); color: var(--primary-color); }
+    .option-item.selected-option { background: var(--primary-color); color: white; }
+
+    /* أزرار التحكم والعمليات */
+    .actions-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+
+    .btn {
+      flex: 1 1 150px;
+      padding: 12px 18px;
+      border: none;
+      border-radius: 12px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: 8px;
+      transition: all 0.2s;
+    }
+
+    .btn-excel { background: #27a770; color: white; box-shadow: 0 4px 12px rgba(39,167,112,0.2); }
+    .btn-excel:hover { background: #1e8759; }
+    .btn-print { background: #1d74b3; color: white; box-shadow: 0 4px 12px rgba(29,116,179,0.2); }
+    .btn-print:hover { background: #155a8a; }
+    .btn-delete { background: var(--danger); color: white; box-shadow: 0 4px 12px rgba(194,65,69,0.2); }
+    .btn-delete:hover { background: #a63236; }
+    .btn:disabled { background: #d4e0eb !important; color: #92a6b5 !important; box-shadow: none !important; cursor: not-allowed; }
+
+    /* جدول عرض البيانات المحسن والمعدل */
+    .table-container {
+      overflow-x: auto;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      background: white;
+    }
+
+    table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.95rem; }
+    th { background: #f1f6fa; color: var(--primary-color); padding: 16px; font-weight: 700; border-bottom: 2px solid var(--border-color); font-size: 1.05rem; }
+    td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: #fafcfe; }
+
+    /* جعل اسم المحطة في المنتصف تماماً وبحجم أكبر */
+    .station-name-td { 
+      font-weight: 700; 
+      color: var(--primary-color); 
+      background: #f7fafc; 
+      width: 25%; 
+      font-size: 1.25rem; 
+      text-align: center; 
+      vertical-align: middle;
+      border-left: 1px solid var(--border-color);
+    }
+    
+    /* صناديق الأعطال والمشاكل بخط أوضح وأكبر */
+    .fault-item-box { 
+      background: #f8fafc; 
+      border: 1px solid #dbeafe; 
+      border-radius: 10px; 
+      padding: 14px; 
+      margin-bottom: 10px; 
+      box-shadow: 0 2px 5px rgba(0,0,0,0.01);
+    }
+    .fault-item-box:last-child { margin-bottom: 0; }
+
+    .fault-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; }
+    .tag-mech { background: #ffeacc; color: #b86200; }
+    .tag-elec { background: #e2f0fd; color: #1d74b3; }
+    .tag-other { background: #e2f7ed; color: #1e8759; }
+
+    /* تكبير حجم نصوص المشكلة */
+    .fault-component-text {
+      font-size: 1.05rem; 
+      margin-bottom: 6px;
+      color: var(--text-main);
+    }
+    
+    .fault-details-text {
+      font-size: 1.1rem; 
+      color: #0f172a; 
+      font-weight: 500;
+      line-height: 1.5;
+      background: #fff;
+      padding: 8px 12px;
+      border-radius: 6px;
+      border-right: 3px solid var(--secondary-color);
+      margin-top: 6px;
+    }
+
+    .no-data { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
+    .status-message { margin-top: 14px; text-align: center; font-size: 0.9rem; border-radius: 12px; padding: 12px; font-weight: 500; display: none; }
+    .status-message.info { background: var(--primary-light); color: var(--primary-color); display: block; }
+    .status-message.success { background: var(--success-light); color: var(--success); display: block; }
+    .status-message.error { background: var(--danger-light); color: var(--danger); display: block; }
+
+    /* نظام المنبثقات الفورية والجميلة (Toast Live Alert) */
+    .toast-container {
+      position: fixed;
+      bottom: 24px;
+      left: 24px;
+      z-index: 9999;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 350px;
+      width: 100%;
+    }
+
+    .toast-popup {
+      background: white;
+      border-right: 5px solid var(--warning);
+      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
+      border-radius: 12px;
+      padding: 16px;
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      animation: slideInLeft 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      position: relative;
+      overflow: hidden;
+    }
+
+    @keyframes slideInLeft {
+      from { transform: translateX(-120%); opacity: 0; }
+      to { transform: translateX(0); opacity: 1; }
+    }
+
+    .toast-header { font-weight: 700; color: var(--primary-color); display: flex; justify-content: space-between; font-size: 0.95rem; }
+    .toast-close { cursor: pointer; color: var(--text-muted); font-size: 1rem; }
+    .toast-body { font-size: 0.85rem; color: var(--text-main); line-height: 1.4; }
+    .toast-time { font-size: 0.75rem; color: var(--text-muted); text-align: left; }
+
+    /* نظام النوافذ المنبثقة المخصصة للتأكيد والحذف (Custom Modals) */
+    .modal-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(11, 75, 102, 0.4);
+      backdrop-filter: blur(4px);
+      z-index: 10000;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.3s ease;
+    }
+    .modal-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    .modal-card {
+      background: white;
+      border-radius: var(--radius-lg);
+      max-width: 480px;
+      width: 90%;
+      padding: 30px 24px;
+      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+      text-align: center;
+      transform: scale(0.85);
+      transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    }
+    .modal-overlay.show .modal-card {
+      transform: scale(1);
+    }
+    .modal-icon {
+      font-size: 3.5rem;
+      margin-bottom: 16px;
+      display: inline-block;
+    }
+    .modal-title {
+      font-size: 1.3rem;
+      font-weight: 700;
+      color: var(--primary-color);
+      margin-bottom: 12px;
+    }
+    .modal-desc {
+      font-size: 0.95rem;
+      color: var(--text-muted);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    .modal-actions {
+      display: flex;
+      gap: 12px;
+      justify-content: center;
+    }
+    .btn-modal-confirm {
+      background: var(--danger);
+      color: white;
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-modal-confirm:hover { background: #a63236; }
+    .btn-modal-cancel {
+      background: #e2e8f0;
+      color: var(--text-main);
+      padding: 12px 24px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-modal-cancel:hover { background: #cbd5e1; }
+    .btn-modal-success {
+      background: var(--success);
+      color: white;
+      padding: 12px 32px;
+      border-radius: 12px;
+      border: none;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    .btn-modal-success:hover { background: #1e8759; }
+
+    @media print {
+      body { background: white; padding: 0; }
+      .container { box-shadow: none; max-width: 100%; padding: 0; }
+      .header-card, .filter-card, .actions-row, .refresh-btn, .network-status-bar, .toast-container, .modal-overlay { display: none !important; }
+      th { background: #eee !important; color: black !important; }
+      td, th { border: 1px solid #ccc !important; }
+    }
+  </style>
+</head>
+<body>
+
+<div class="network-status-bar online" id="networkStatusBar">
+  <span id="networkStatusText">🟢 متصل بالشبكة - رصد مباشر للبلاغات مفعّل تلقائياً</span>
+</div>
+
+<div class="container">
+  <div class="header-card">
+    <div class="header-info">
+      <div class="admin-icon">👨‍💻</div>
+      <div class="header-text">
+        <h2>لوحة تحكم المشرف</h2>
+        <p>استقبال ومتابعة تقارير أعطال توشكى</p>
+      </div>
+    </div>
+    <button class="refresh-btn" id="refreshBtn">🔄 تحديث البيانات</button>
+  </div>
+
+  <div class="filter-card">
+    <div class="label-icon">🔍 استعراض بلاغات النطاق</div>
+    <div class="custom-select" id="zoneSelect">
+      <span id="zoneDisplayText">اختر الزونة لعرض أعطالها...</span>
+      <span class="arrow-icon" id="zoneArrow">▼</span>
+      <div class="options-container" id="zoneOptionsContainer"></div>
+    </div>
+  </div>
+
+  <div class="actions-row">
+    <button class="btn btn-excel" id="exportExcelBtn" disabled>📊 تحميل ملف Excel</button>
+    <button class="btn btn-print" id="printBtn" disabled>🖨️ طباعة التقرير</button>
+    <button class="btn btn-delete" id="deleteBtn" disabled>🗑️ مسح أعطال الزونة</button>
+  </div>
+
+  <div id="statusBox" class="status-message"></div>
+
+  <div class="table-container">
+    <table>
+      <thead>
+        <tr>
+          <th style="text-align: center;">المحطة</th>
+          <th>الأعطال المسجلة والملاحظات </th>
+        </tr>
+      </thead>
+      <tbody id="faultsTableBody">
+        <tr>
+          <td colspan="2" class="no-data">يرجى تحديد الزونة من الأعلى لعرض البلاغات الحالية.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="toast-container" id="toastContainer"></div>
+
+<div class="modal-overlay" id="deleteConfirmModal">
+  <div class="modal-card">
+    <span class="modal-icon">⚠️</span>
+    <div class="modal-title" id="modalTitle">تنبيه حرج جداً!</div>
+    <div class="modal-desc" id="modalDesc">هل أنت متأكد من رغبتك في حذف جميع بلاغات الأعطال الخاصة بالزونة المحددة نهائياً من قاعدة البيانات؟ لا يمكن التراجع عن هذا الإجراء مطلقاً بعد إتمامه.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-confirm" id="btnConfirmDeleteAction">نعم، احذف السجلات</button>
+      <button class="btn-modal-cancel" id="btnCancelDeleteAction">إلغاء الأمر</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="successModal">
+  <div class="modal-card">
+    <span class="modal-icon">🗑️</span>
+    <div class="modal-title">تم الحذف بنجاح</div>
+    <div class="modal-desc">تم تفريغ وحذف جميع سجلات البلاغات للنطاق المحدد من السيرفر بنجاح، وتحديث شاشة المشرف.</div>
+    <div class="modal-actions">
+      <button class="btn-modal-success" id="btnSuccessClose">موافق</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  (function() {
+    const zones = ['Zone_A', 'Zone_B', 'Zone_C', 'Zone_D', 'Zone_E', 'Zone_F', 'Zone_G', 'Zone_H', 'Zone_I', 'Zone_J', 'Zone_K', 'Zone_L', 'Zone_O1', 'Zone_O2', 'Zone_O3', 'Zone_O4', 'Zone_O5', 'Zone_O2dashO6', 'Zone_O8', 'Zone_R', 'Zone_S'];
+    let selectedZone = null;
+    let fetchedDataRaw = [];
+    let isInitialLoadFinished = false;
+    let isServerConnected = true; // متغير لتتبع حالة الإنترنت لحظياً وضمان التحصين
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyAZcnYu67KXLnGIbENQxu5_ZkJ0MfpoARk",
+      authDomain: "toshka-c7f2a.firebaseapp.com",
+      databaseURL: "https://toshka-c7f2a-default-rtdb.asia-southeast1.firebasedatabase.app",
+      projectId: "toshka-c7f2a",
+      storageBucket: "toshka-c7f2a.firebasestorage.app",
+      messagingSenderId: "218353640393",
+      appId: "1:218353640393:web:710134297421c04dc73e18",
+      measurementId: "G-ZFCE5PRF2C"
+    };
+    
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // عناصر الـ DOM
+    const zoneSelect = document.getElementById('zoneSelect');
+    const zoneDisplayText = document.getElementById('zoneDisplayText');
+    const zoneArrow = document.getElementById('zoneArrow');
+    const zoneOptionsContainer = document.getElementById('zoneOptionsContainer');
+    const faultsTableBody = document.getElementById('faultsTableBody');
+    const exportExcelBtn = document.getElementById('exportExcelBtn');
+    const printBtn = document.getElementById('printBtn');
+    const deleteBtn = document.getElementById('deleteBtn');
+    const refreshBtn = document.getElementById('refreshBtn');
+    const statusBox = document.getElementById('statusBox');
+    const networkStatusBar = document.getElementById('networkStatusBar');
+    const networkStatusText = document.getElementById('networkStatusText');
+    const toastContainer = document.getElementById('toastContainer');
+
+    // عناصر الـ Modals الجديدة
+    const deleteConfirmModal = document.getElementById('deleteConfirmModal');
+    const successModal = document.getElementById('successModal');
+    const modalDesc = document.getElementById('modalDesc');
+    const btnConfirmDeleteAction = document.getElementById('btnConfirmDeleteAction');
+    const btnCancelDeleteAction = document.getElementById('btnCancelDeleteAction');
+    const btnSuccessClose = document.getElementById('btnSuccessClose');
+
+    function showStatus(text, type) {
+      statusBox.textContent = text;
+      statusBox.className = `status-message ${type}`;
+      if(type !== 'info') {
+        setTimeout(() => { statusBox.style.display = 'none'; }, 5000);
+      }
+    }
+
+    function monitorNetwork() {
+      db.ref('.info/connected').on('value', (snapshot) => {
+        if (snapshot.val() === true) {
+          isServerConnected = true;
+          networkStatusBar.className = "network-status-bar online";
+          networkStatusText.textContent = "🟢 متصل بالسيرفر الرئيسي - استقبال البلاغات الحية يعمل بنجاح";
+        } else {
+          isServerConnected = false;
+          networkStatusBar.className = "network-status-bar weak";
+          networkStatusText.textContent = "⚠️ الاتصال بالخادم ضعيف أو منقطع؛ جاري المزامنة تلقائياً...";
+        }
+      });
+    }
+
+    function listenForLiveFaults() {
+      const liveRef = db.ref('faultsLog');
+      liveRef.once('value', () => { isInitialLoadFinished = true; });
+
+      liveRef.on('child_added', (snapshot) => {
+        if (!isInitialLoadFinished) return;
+        const data = snapshot.val();
+        triggerLiveToast(data);
+        if (selectedZone && data.zone === selectedZone) {
+          loadFaultsForZone();
+        }
+      });
+    }
+
+    function triggerLiveToast(data) {
+      const zoneLabel = data.zone.replace('Zone_', '').replace('_', ' ');
+      const station = data.station || 'غير محدد';
+      const count = (data.faults && data.faults.length) || 1;
+
+      const toast = document.createElement('div');
+      toast.className = 'toast-popup';
+      toast.innerHTML = `
+        <div class="toast-header">
+          <span>⚠️ بلاغ عطل جديد وارد حالياً</span>
+          <span class="toast-close">×</span>
+        </div>
+        <div class="toast-body">
+          قام أحد الفنيين برفع تقرير يحتوي على <strong>(${count}) أعطال</strong> في نطاق <strong>[ زونة ${zoneLabel} ]</strong> - محطة <strong>(${station})</strong>.
+        </div>
+        <div class="toast-time">⏱️ ${data.date || 'الآن'}</div>
+      `;
+
+      toast.querySelector('.toast-close').addEventListener('click', () => { toast.remove(); });
+      toastContainer.appendChild(toast);
+      setTimeout(() => { if (toast.parentNode) toast.remove(); }, 8000);
+    }
+
+    zoneSelect.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const isOpen = zoneOptionsContainer.classList.contains('show');
+      zoneOptionsContainer.classList.toggle('show', !isOpen);
+      zoneArrow.classList.toggle('open', !isOpen);
+    });
+
+    document.addEventListener('click', () => {
+      zoneOptionsContainer.classList.remove('show');
+      zoneArrow.classList.remove('open');
+    });
+
+    function renderZoneOptions() {
+      zoneOptionsContainer.innerHTML = '';
+      zones.forEach(zone => {
+        const div = document.createElement('div');
+        div.className = 'option-item';
+        let display = zone.replace('Zone_', '').replace('_', ' ');
+        if (zone === 'Zone_O2dashO6') display = 'O2/O6';
+        div.textContent = display;
+        if (selectedZone === zone) div.classList.add('selected-option');
+        
+        div.addEventListener('click', (e) => {
+          e.stopPropagation();
+          selectedZone = zone;
+          zoneDisplayText.textContent = display;
+          
+          zoneOptionsContainer.classList.remove('show');
+          zoneArrow.classList.remove('open');
+          
+          renderZoneOptions();
+          loadFaultsForZone();
+        });
+        zoneOptionsContainer.appendChild(div);
+      });
+    }
+
+    // كائن عالمي لحفظ مجموعات المحطات الجاهزة للتصدير منسقة
+    let activeStationsGroup = {};
+
+    function loadFaultsForZone() {
+      if (!selectedZone) return;
+      
+      showStatus('⏳ جاري جلب ومزامنة أحدث تقارير الأعطال  ...', 'info');
+      faultsTableBody.innerHTML = '<tr><td colspan="2" class="no-data">جاري تحميل البيانات...</td></tr>';
+      
+      db.ref('faultsLog').orderByChild('zone').equalTo(selectedZone).once('value', (snapshot) => {
+        faultsTableBody.innerHTML = '';
+        fetchedDataRaw = [];
+        activeStationsGroup = {};
+        
+        if (!snapshot.exists()) {
+          faultsTableBody.innerHTML = '<tr><td colspan="2" class="no-data">❌ لا توجد أعطال مسجلة حالياً لهذه الزونة.</td></tr>';
+          setButtonsState(false);
+          statusBox.style.display = 'none';
+          return;
+        }
+
+        snapshot.forEach((childSnapshot) => {
+          const key = childSnapshot.key;
+          const data = childSnapshot.val();
+          fetchedDataRaw.push({ key: key, data: data });
+
+          const station = data.station || 'غير محدد';
+          if (!activeStationsGroup[station]) { activeStationsGroup[station] = []; }
+          
+          if (Array.isArray(data.faults)) {
+            data.faults.forEach(f => {
+              activeStationsGroup[station].push({
+                type: f.type,
+                pump: f.pump,
+                notes: f.notes,
+                date: data.date || ''
+              });
+            });
+          }
+        });
+
+        Object.keys(activeStationsGroup).sort().forEach(stationName => {
+          const tr = document.createElement('tr');
+          const tdStation = document.createElement('td');
+          tdStation.className = 'station-name-td';
+          tdStation.textContent = stationName;
+          
+          const tdFaults = document.createElement('td');
+          activeStationsGroup[stationName].forEach(fault => {
+            const box = document.createElement('div');
+            box.className = 'fault-item-box';
+            let tagClass = 'tag-other';
+            if(fault.type.includes('كهربائي')) tagClass = 'tag-elec';
+            else if(fault.type.includes('ميكانيكي')) tagClass = 'tag-mech';
+
+            box.innerHTML = `
+              <span class="fault-tag ${tagClass}">${fault.type}</span>
+              <div class="fault-component-text"><strong>المكون/الطلمبة:</strong> ${fault.pump}</div>
+              <div class="fault-details-text"><strong>المشكلة:</strong> ${fault.notes}</div>
+              <div style="font-size:0.75rem; color:#9ab0c5; text-align:left; margin-top:8px;">⏱️ ${fault.date}</div>
+            `;
+            tdFaults.appendChild(box);
+          });
+          
+          tr.appendChild(tdStation);
+          tr.appendChild(tdFaults);
+          faultsTableBody.appendChild(tr);
+        });
+
+        setButtonsState(true);
+        showStatus('✅ تم تحديث وجدولة البيانات بنجاح.', 'success');
+      }).catch(err => {
+        showStatus('❌ خطأ أثناء جلب البيانات: ' + err.message, 'error');
+      });
+    }
+
+    function setButtonsState(enabled) {
+      exportExcelBtn.disabled = !enabled;
+      printBtn.disabled = !enabled;
+      deleteBtn.disabled = !enabled;
+    }
+
+    // تصدير متطور وذكي مدمج الخلايا ومحصن ضد انقطاع الشبكة
+    exportExcelBtn.addEventListener('click', () => {
+      // أولاً: تحصين ضد انقطاع الشبكة أثناء محاولة التصدير
+      if (!isServerConnected && fetchedDataRaw.length === 0) {
+        showStatus('❌ لا يمكن تحميل الملف؛ يرجى التحقق من اتصالك بالإنترنت أولاً ومزامنة البيانات.', 'error');
+        return;
+      }
+      
+      if (Object.keys(activeStationsGroup).length === 0) return;
+
+      // بناء مصفوفة البيانات ثنائية الأبعاد لـ Excel مدمجة ومنسقة بدون عمود الزونة
+      const excelRows = [
+        ["اسم المحطة", "نوع العطل", "المكون / رقم الطلمبة", "المشاكل والأعطال", "التاريخ والوقت"]
+      ];
+
+      const merges = [];
+      let currentExcelRowIndex = 1; // السطر الأول index 0 هو الهيدر، لذا نبدأ من 1
+
+      Object.keys(activeStationsGroup).sort().forEach(stationName => {
+        const faultsList = activeStationsGroup[stationName];
+        const totalFaults = faultsList.length;
+
+        if (totalFaults > 1) {
+          // دمج خلايا اسم المحطة (من الصف الحالي إلى نهاية عدد أعطال نفس المحطة) في العمود الأول (0)
+          merges.push({
+            s: { r: currentExcelRowIndex, c: 0 },
+            e: { r: currentExcelRowIndex + totalFaults - 1, c: 0 }
+          });
+        }
+
+        faultsList.forEach((fault, index) => {
+          // في حال دمج الخلايا، نضع اسم المحطة في أول خلية فقط، والخلية التالية فارغة مدمجة
+          excelRows.push([
+            index === 0 ? stationName : "", 
+            fault.type,
+            fault.pump,
+            fault.notes,
+            fault.date
+          ]);
+        });
+
+        currentExcelRowIndex += totalFaults;
+      });
+
+      // تحويل المصفوفة إلى Worksheet
+      const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
+      
+      // تطبيق الدمج الذكي إذا وجد
+      if (merges.length > 0) {
+        worksheet['!merges'] = merges;
+      }
+
+      // ضبط المحاذاة والاتجاه إلى اليمين RTL
+      if (!worksheet['!views']) worksheet['!views'] = [{}];
+      worksheet['!views'][0].RTL = true;
+
+      // ضبط عرض الأعمدة تلقائياً ليكون مظهر الملف احترافي ومنظم
+      worksheet['!cols'] = [
+        { wch: 25 }, // اسم المحطة
+        { wch: 15 }, // نوع العطل
+        { wch: 22 }, // المكون
+        { wch: 45 }, // المشاكل والأعطال
+        { wch: 18 }  // التاريخ والوقت
+      ];
+
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "تقرير الأعطال");
+      
+      // استخراج اسم الزونة الحالي للملف
+      const readableZoneFile = selectedZone.replace('Zone_', '').replace('_', ' ');
+      XLSX.writeFile(workbook, `اعطال_توشكى_زونة_${readableZoneNameToFile(selectedZone)}.xlsx`);
+    });
+
+    function readableZoneNameToFile(zone) {
+      if (zone === 'Zone_O2dashO6') return 'O2_O6';
+      return zone.replace('Zone_', '');
+    }
+
+    printBtn.addEventListener('click', () => { window.print(); });
+
+    deleteBtn.addEventListener('click', () => {
+      if (fetchedDataRaw.length === 0) return;
+      
+      const readableZoneName = selectedZone.replace('Zone_', '').replace('_', ' ');
+      modalDesc.innerHTML = `هل أنت متأكد من رغبتك في حذف جميع بلاغات الأعطال الخاصة بـ <strong>(زونة ${readableZoneName})</strong> نهائياً من قاعدة البيانات؟<br><span style="color:var(--danger); font-weight:600;">⚠️ لا يمكن التراجع عن هذا الإجراء مطلقاً بعد إتمامه!</span>`;
+      
+      deleteConfirmModal.classList.add('show');
+    });
+
+    btnCancelDeleteAction.addEventListener('click', () => {
+      deleteConfirmModal.classList.remove('show');
+    });
+
+    btnConfirmDeleteAction.addEventListener('click', () => {
+      deleteConfirmModal.classList.remove('show');
+      showStatus('⏳ جاري إزالة السجلات من قاعدة البيانات...', 'info');
+      
+      const promises = fetchedDataRaw.map(item => db.ref('faultsLog').child(item.key).remove());
+
+      Promise.all(promises).then(() => {
+        successModal.classList.add('show');
+        loadFaultsForZone();
+      }).catch(err => {
+        showStatus('❌ خطأ أثناء محاولة الحذف: ' + err.message, 'error');
+      });
+    });
+
+    btnSuccessClose.addEventListener('click', () => {
+      successModal.classList.remove('show');
+    });
+
+    refreshBtn.addEventListener('click', () => {
+      if (!selectedZone) {
+        showStatus('⚠️ الرجاء اختيار زونة أولاً ليتم تحديث بياناتها.', 'error');
+        return;
+      }
+      loadFaultsForZone();
+    });
+
+    renderZoneOptions();
+    monitorNetwork();
+    listenForLiveFaults();
+  })();
+</script>
+</body>
+</html>
+
