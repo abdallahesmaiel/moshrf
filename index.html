@@ -7,7 +7,6 @@
   
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/9.22.2/firebase-database-compat.js"></script>
-  
   <script src="https://cdn.jsdelivr.net/npm/xlsx@0.18.5/dist/xlsx.full.min.js"></script>
   
   <style>
@@ -15,19 +14,22 @@
       --primary-color: #0b4b66;
       --primary-light: #e7f1fb;
       --secondary-color: #1d74b3;
-      --bg-gradient: linear-gradient(135deg, #f4f7fc 0%, #eef2f9 100%);
-      --text-main: #1a2f40;
-      --text-muted: #5c6f84;
+      --bg-gradient: linear-gradient(135deg, #f0f4f8 0%, #e6ecf5 100%);
+      --text-main: #1e293b;
+      --text-muted: #64748b;
       --card-bg: #ffffff;
-      --border-color: #d7e3f0;
+      --border-color: #cbd5e1;
       --radius-lg: 24px;
       --radius-md: 16px;
-      --danger: #c24145;
-      --danger-light: #fff2f2;
-      --success: #27a770;
-      --success-light: #edfbf4;
-      --warning: #f39c12;
-      --warning-light: #fef5e7;
+      --radius-sm: 10px;
+      --danger: #dc2626;
+      --danger-light: #fef2f2;
+      --success: #16a34a;
+      --success-light: #f0fdf4;
+      --warning: #d97706;
+      --warning-light: #fef3c7;
+      --shadow-sm: 0 4px 12px rgba(11, 75, 102, 0.04);
+      --shadow-md: 0 10px 30px rgba(11, 75, 102, 0.08);
     }
 
     * {
@@ -48,56 +50,60 @@
       align-items: center;
     }
 
-    /* بار مراقبة الشبكة والاتصال */
+    /* بار مراقبة الشبكة */
     .network-status-bar {
       width: 100%;
-      max-width: 900px;
-      padding: 10px 16px;
-      border-radius: 12px;
-      margin-bottom: 14px;
+      max-width: 950px;
+      padding: 12px 18px;
+      border-radius: 14px;
+      margin-bottom: 16px;
       font-weight: 600;
-      font-size: 0.9rem;
+      font-size: 0.95rem;
       display: flex;
       align-items: center;
       transition: all 0.3s ease;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.02);
+      box-shadow: var(--shadow-sm);
     }
     .network-status-bar.online {
       background: var(--success-light);
       color: var(--success);
-      border: 1px solid #c3edd7;
+      border: 1px solid #bbf7d0;
     }
     .network-status-bar.offline {
       background: var(--danger-light);
       color: var(--danger);
-      border: 1px solid #f8d7da;
+      border: 1px solid #fecaca;
     }
     .network-status-bar.weak {
       background: var(--warning-light);
       color: var(--warning);
-      border: 1px solid #fcd8a5;
+      border: 1px solid #fde68a;
     }
 
     .container {
-      max-width: 900px;
+      max-width: 950px;
       width: 100%;
       background: var(--card-bg);
       border-radius: var(--radius-lg);
-      box-shadow: 0 12px 34px rgba(11, 75, 102, 0.08);
-      padding: 28px 24px;
+      box-shadow: var(--shadow-md);
+      padding: 32px 24px;
+      margin-bottom: 20px;
+      border: 1px solid rgba(11, 75, 102, 0.05);
     }
 
     /* هيدر المشرف */
     .header-card {
-      background: linear-gradient(135deg, #0b4b66 0%, #175e7d 100%);
+      background: linear-gradient(135deg, #0b4b66 0%, #1e5873 50%, #2e6985 100%);
       border-radius: var(--radius-md);
-      padding: 24px;
-      margin-bottom: 24px;
+      padding: 26px;
+      margin-bottom: 26px;
       display: flex;
+      flex-wrap: wrap;
+      gap: 16px;
       justify-content: space-between;
       align-items: center;
       color: white;
-      box-shadow: 0 8px 20px rgba(11, 75, 102, 0.2);
+      box-shadow: 0 10px 25px rgba(11, 75, 102, 0.25);
     }
 
     .header-info {
@@ -107,48 +113,60 @@
     }
 
     .admin-icon {
-      background: rgba(255, 255, 255, 0.15);
+      background: rgba(255, 255, 255, 0.18);
       border-radius: var(--radius-md);
-      width: 54px;
-      height: 54px;
+      width: 58px;
+      height: 58px;
       display: flex;
       align-items: center;
       justify-content: center;
-      font-size: 1.8rem;
+      font-size: 2rem;
     }
 
     .header-text h2 {
-      font-size: 1.4rem;
-      font-weight: 600;
+      font-size: 1.5rem;
+      font-weight: 700;
       margin-bottom: 4px;
+      letter-spacing: -0.5px;
     }
 
     .header-text p {
-      color: rgba(255, 255, 255, 0.8);
-      font-size: 0.85rem;
+      color: rgba(255, 255, 255, 0.85);
+      font-size: 0.9rem;
     }
 
-    .refresh-btn {
-      background: rgba(255, 255, 255, 0.2);
+    .header-actions {
+      display: flex;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .refresh-btn, .edit-table-btn {
+      background: rgba(255, 255, 255, 0.15);
       border: 1px solid rgba(255, 255, 255, 0.3);
       color: white;
-      padding: 10px 16px;
+      padding: 12px 18px;
       border-radius: 12px;
       cursor: pointer;
       font-weight: 600;
       display: flex;
       align-items: center;
       gap: 8px;
-      transition: all 0.2s;
+      transition: all 0.25s ease;
+      font-size: 0.9rem;
     }
-    .refresh-btn:hover { background: white; color: var(--primary-color); }
+    .refresh-btn:hover, .edit-table-btn:hover { 
+      background: white; 
+      color: var(--primary-color);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
 
     /* قسم الفلترة */
     .filter-card {
-      background: #fafcfe;
+      background: #f8fafc;
       border-radius: var(--radius-md);
-      padding: 20px;
-      margin-bottom: 24px;
+      padding: 22px;
+      margin-bottom: 26px;
       border: 1px solid var(--border-color);
     }
 
@@ -156,10 +174,10 @@
       display: flex;
       align-items: center;
       gap: 8px;
-      font-weight: 600;
+      font-weight: 700;
       color: var(--primary-color);
       margin-bottom: 12px;
-      font-size: 0.95rem;
+      font-size: 1rem;
     }
 
     .custom-select {
@@ -167,19 +185,22 @@
       background: white;
       border: 1.5px solid var(--border-color);
       border-radius: 12px;
-      padding: 14px 16px;
-      font-size: 0.95rem;
+      padding: 14px 18px;
+      font-size: 1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      transition: all 0.25s;
+      transition: all 0.25s ease;
+    }
+    .custom-select:hover {
+      border-color: var(--secondary-color);
     }
 
     .arrow-icon {
-      font-size: 0.8rem;
+      font-size: 0.85rem;
       color: var(--text-muted);
-      transition: transform 0.2s;
+      transition: transform 0.2s ease;
     }
     .arrow-icon.open { transform: rotate(180deg); }
 
@@ -190,107 +211,114 @@
       width: 100%;
       background: white;
       border-radius: 14px;
-      box-shadow: 0 15px 35px rgba(0,0,0,0.1);
+      box-shadow: 0 15px 35px rgba(11, 75, 102, 0.15);
       border: 1px solid var(--border-color);
-      max-height: 220px;
+      max-height: 250px;
       overflow-y: auto;
       z-index: 100;
       display: none;
-      padding: 6px;
+      padding: 8px;
     }
-    .options-container.show { display: block; animation: selectFade 0.2s ease; }
+    .options-container.show { display: block; animation: selectFade 0.25s ease; }
 
     @keyframes selectFade {
-      from { opacity: 0; transform: translateY(-5px); }
+      from { opacity: 0; transform: translateY(-6px); }
       to { opacity: 1; transform: translateY(0); }
     }
 
     .option-item {
       padding: 12px 16px;
       cursor: pointer;
-      border-radius: 8px;
-      transition: all 0.15s;
+      border-radius: 10px;
+      transition: all 0.15s ease;
+      font-size: 0.95rem;
+      font-weight: 500;
+      color: #334155;
     }
     .option-item:hover { background: var(--primary-light); color: var(--primary-color); }
     .option-item.selected-option { background: var(--primary-color); color: white; }
 
-    /* أزرار التحكم والعمليات */
+    /* أزرار التحكم */
     .actions-row {
       display: flex;
       flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 20px;
+      gap: 14px;
+      margin-bottom: 24px;
     }
 
     .btn {
       flex: 1 1 150px;
-      padding: 12px 18px;
+      padding: 14px 20px;
       border: none;
       border-radius: 12px;
-      font-weight: 600;
-      font-size: 0.95rem;
+      font-weight: 700;
+      font-size: 1rem;
       cursor: pointer;
       display: flex;
       align-items: center;
       justify-content: center;
       gap: 8px;
-      transition: all 0.2s;
+      transition: all 0.25s ease;
     }
 
-    .btn-excel { background: #27a770; color: white; box-shadow: 0 4px 12px rgba(39,167,112,0.2); }
-    .btn-excel:hover { background: #1e8759; }
-    .btn-print { background: #1d74b3; color: white; box-shadow: 0 4px 12px rgba(29,116,179,0.2); }
-    .btn-print:hover { background: #155a8a; }
-    .btn-delete { background: var(--danger); color: white; box-shadow: 0 4px 12px rgba(194,65,69,0.2); }
-    .btn-delete:hover { background: #a63236; }
-    .btn:disabled { background: #d4e0eb !important; color: #92a6b5 !important; box-shadow: none !important; cursor: not-allowed; }
+    .btn-excel { background: var(--success); color: white; box-shadow: 0 4px 14px rgba(22,163,74,0.25); }
+    .btn-excel:hover { background: #15803d; transform: translateY(-1px); }
+    .btn-print { background: var(--secondary-color); color: white; box-shadow: 0 4px 14px rgba(29,116,179,0.25); }
+    .btn-print:hover { background: #1d649c; transform: translateY(-1px); }
+    .btn-delete { background: var(--danger); color: white; box-shadow: 0 4px 14px rgba(220,38,38,0.25); }
+    .btn-delete:hover { background: #b91c1c; transform: translateY(-1px); }
+    .btn:disabled { background: #e2e8f0 !important; color: #94a3b8 !important; box-shadow: none !important; cursor: not-allowed; transform: none !important; }
 
-    /* جدول عرض البيانات المحسن والمعدل */
+    /* جدول البيانات */
     .table-container {
       overflow-x: auto;
       border: 1px solid var(--border-color);
       border-radius: var(--radius-md);
       background: white;
+      box-shadow: var(--shadow-sm);
     }
 
     table { width: 100%; border-collapse: collapse; text-align: right; font-size: 0.95rem; }
-    th { background: #f1f6fa; color: var(--primary-color); padding: 16px; font-weight: 700; border-bottom: 2px solid var(--border-color); font-size: 1.05rem; }
-    td { padding: 14px 16px; border-bottom: 1px solid var(--border-color); vertical-align: top; }
+    th { background: #f1f5f9; color: var(--primary-color); padding: 18px 16px; font-weight: 700; border-bottom: 2px solid var(--border-color); font-size: 1.05rem; }
+    td { padding: 16px; border-bottom: 1px solid #e2e8f0; vertical-align: top; }
     tr:last-child td { border-bottom: none; }
-    tr:hover td { background: #fafcfe; }
+    tr:hover td { background: #f8fafc; }
 
-    /* جعل اسم المحطة في المنتصف تماماً وبحجم أكبر */
     .station-name-td { 
       font-weight: 700; 
       color: var(--primary-color); 
-      background: #f7fafc; 
+      background: #f8fafc; 
       width: 25%; 
-      font-size: 1.25rem; 
+      font-size: 1.3rem; 
       text-align: center; 
       vertical-align: middle;
       border-left: 1px solid var(--border-color);
+      text-shadow: 0 1px 1px rgba(0,0,0,0.02);
     }
     
-    /* صناديق الأعطال والمشاكل بخط أوضح وأكبر */
     .fault-item-box { 
-      background: #f8fafc; 
-      border: 1px solid #dbeafe; 
-      border-radius: 10px; 
-      padding: 14px; 
-      margin-bottom: 10px; 
-      box-shadow: 0 2px 5px rgba(0,0,0,0.01);
+      background: #ffffff; 
+      border: 1px solid #e2e8f0; 
+      border-radius: var(--radius-sm); 
+      padding: 16px; 
+      margin-bottom: 12px; 
+      box-shadow: 0 2px 6px rgba(0,0,0,0.02);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+    .fault-item-box:hover {
+      transform: translateX(-2px);
+      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
     }
     .fault-item-box:last-child { margin-bottom: 0; }
 
-    .fault-tag { display: inline-block; padding: 4px 10px; border-radius: 6px; font-size: 0.85rem; font-weight: 700; margin-bottom: 8px; }
-    .tag-mech { background: #ffeacc; color: #b86200; }
-    .tag-elec { background: #e2f0fd; color: #1d74b3; }
-    .tag-other { background: #e2f7ed; color: #1e8759; }
+    .fault-tag { display: inline-block; padding: 6px 12px; border-radius: 8px; font-size: 0.85rem; font-weight: 700; margin-bottom: 10px; }
+    .tag-mech { background: var(--warning-light); color: #92400e; border: 1px solid #fef3c7; }
+    .tag-elec { background: var(--primary-light); color: #1e40af; border: 1px solid #bfdbfe; }
+    .tag-other { background: var(--success-light); color: #166534; border: 1px solid #bbf7d0; }
 
-    /* تكبير حجم نصوص المشكلة */
     .fault-component-text {
       font-size: 1.05rem; 
-      margin-bottom: 6px;
+      margin-bottom: 8px;
       color: var(--text-main);
     }
     
@@ -298,21 +326,21 @@
       font-size: 1.1rem; 
       color: #0f172a; 
       font-weight: 500;
-      line-height: 1.5;
-      background: #fff;
-      padding: 8px 12px;
-      border-radius: 6px;
-      border-right: 3px solid var(--secondary-color);
-      margin-top: 6px;
+      line-height: 1.6;
+      background: #f8fafc;
+      padding: 10px 14px;
+      border-radius: 8px;
+      border-right: 4px solid var(--secondary-color);
+      margin-top: 8px;
     }
 
-    .no-data { text-align: center; padding: 40px; color: var(--text-muted); font-style: italic; }
-    .status-message { margin-top: 14px; text-align: center; font-size: 0.9rem; border-radius: 12px; padding: 12px; font-weight: 500; display: none; }
-    .status-message.info { background: var(--primary-light); color: var(--primary-color); display: block; }
-    .status-message.success { background: var(--success-light); color: var(--success); display: block; }
-    .status-message.error { background: var(--danger-light); color: var(--danger); display: block; }
+    .no-data { text-align: center; padding: 50px; color: var(--text-muted); font-style: italic; font-size: 1.05rem; }
+    .status-message { margin-top: 16px; text-align: center; font-size: 0.95rem; border-radius: 12px; padding: 14px; font-weight: 600; display: none; box-shadow: var(--shadow-sm); }
+    .status-message.info { background: var(--primary-light); color: var(--primary-color); display: block; border: 1px solid #bfdbfe; }
+    .status-message.success { background: var(--success-light); color: var(--success); display: block; border: 1px solid #bbf7d0; }
+    .status-message.error { background: var(--danger-light); color: var(--danger); display: block; border: 1px solid #fecaca; }
 
-    /* نظام المنبثقات الفورية والجميلة (Toast Live Alert) */
+    /* Toast */
     .toast-container {
       position: fixed;
       bottom: 24px;
@@ -320,21 +348,21 @@
       z-index: 9999;
       display: flex;
       flex-direction: column;
-      gap: 10px;
-      max-width: 350px;
+      gap: 12px;
+      max-width: 380px;
       width: 100%;
     }
 
     .toast-popup {
       background: white;
       border-right: 5px solid var(--warning);
-      box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-      border-radius: 12px;
-      padding: 16px;
+      box-shadow: 0 12px 35px rgba(0,0,0,0.15);
+      border-radius: 14px;
+      padding: 18px;
       display: flex;
       flex-direction: column;
-      gap: 6px;
-      animation: slideInLeft 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      gap: 8px;
+      animation: slideInLeft 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
       position: relative;
       overflow: hidden;
     }
@@ -344,20 +372,20 @@
       to { transform: translateX(0); opacity: 1; }
     }
 
-    .toast-header { font-weight: 700; color: var(--primary-color); display: flex; justify-content: space-between; font-size: 0.95rem; }
-    .toast-close { cursor: pointer; color: var(--text-muted); font-size: 1rem; }
-    .toast-body { font-size: 0.85rem; color: var(--text-main); line-height: 1.4; }
-    .toast-time { font-size: 0.75rem; color: var(--text-muted); text-align: left; }
+    .toast-header { font-weight: 700; color: var(--primary-color); display: flex; justify-content: space-between; font-size: 1rem; }
+    .toast-close { cursor: pointer; color: var(--text-muted); font-size: 1.2rem; line-height: 1; }
+    .toast-body { font-size: 0.9rem; color: var(--text-main); line-height: 1.5; }
+    .toast-time { font-size: 0.8rem; color: var(--text-muted); text-align: left; }
 
-    /* نظام النوافذ المنبثقة المخصصة للتأكيد والحذف (Custom Modals) */
+    /* Modal Styles */
     .modal-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(11, 75, 102, 0.4);
-      backdrop-filter: blur(4px);
+      background: rgba(11, 75, 102, 0.5);
+      backdrop-filter: blur(5px);
       z-index: 10000;
       display: flex;
       align-items: center;
@@ -373,13 +401,16 @@
     .modal-card {
       background: white;
       border-radius: var(--radius-lg);
-      max-width: 480px;
+      max-width: 550px;
       width: 90%;
-      padding: 30px 24px;
-      box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+      padding: 32px 24px;
+      box-shadow: 0 25px 60px rgba(0,0,0,0.25);
       text-align: center;
       transform: scale(0.85);
       transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+      max-height: 85vh;
+      overflow-y: auto;
+      position: relative;
     }
     .modal-overlay.show .modal-card {
       transform: scale(1);
@@ -390,62 +421,142 @@
       display: inline-block;
     }
     .modal-title {
-      font-size: 1.3rem;
+      font-size: 1.4rem;
       font-weight: 700;
       color: var(--primary-color);
       margin-bottom: 12px;
+      padding-left: 24px;
+      padding-right: 24px;
     }
     .modal-desc {
-      font-size: 0.95rem;
+      font-size: 1rem;
       color: var(--text-muted);
       line-height: 1.6;
       margin-bottom: 24px;
+      text-align: right;
     }
     .modal-actions {
       display: flex;
       gap: 12px;
       justify-content: center;
+      flex-wrap: wrap;
     }
     .btn-modal-confirm {
       background: var(--danger);
       color: white;
-      padding: 12px 24px;
+      padding: 12px 26px;
       border-radius: 12px;
       border: none;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: background 0.2s;
     }
-    .btn-modal-confirm:hover { background: #a63236; }
+    .btn-modal-confirm:hover { background: #b91c1c; }
     .btn-modal-cancel {
-      background: #e2e8f0;
+      background: #f1f5f9;
       color: var(--text-main);
-      padding: 12px 24px;
+      padding: 12px 26px;
       border-radius: 12px;
       border: none;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: background 0.2s;
     }
-    .btn-modal-cancel:hover { background: #cbd5e1; }
+    .btn-modal-cancel:hover { background: #e2e8f0; }
     .btn-modal-success {
       background: var(--success);
       color: white;
-      padding: 12px 32px;
+      padding: 12px 36px;
       border-radius: 12px;
       border: none;
-      font-weight: 600;
+      font-weight: 700;
       cursor: pointer;
       transition: background 0.2s;
     }
-    .btn-modal-success:hover { background: #1e8759; }
+    .btn-modal-success:hover { background: #15803d; }
+
+    /* زر الإغلاق العلوي للنوافذ المنبثقة */
+    .modal-close-top {
+      position: absolute;
+      top: 16px;
+      left: 16px;
+      background: #f1f5f9;
+      border: none;
+      color: #64748b;
+      width: 36px;
+      height: 36px;
+      border-radius: 50%;
+      font-size: 1.4rem;
+      font-weight: bold;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: all 0.2s ease;
+      z-index: 10;
+    }
+    .modal-close-top:hover {
+      background: #e2e8f0;
+      color: #0f172a;
+      transform: rotate(90deg);
+    }
+
+    /* Edit Modal Styles */
+    .edit-station-block {
+      background: #f8fafc;
+      border: 1px solid var(--border-color);
+      border-radius: var(--radius-md);
+      padding: 18px;
+      margin-bottom: 18px;
+      text-align: right;
+    }
+    .edit-station-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 14px;
+      font-weight: 700;
+      color: var(--primary-color);
+      font-size: 1.15rem;
+    }
+    .edit-fault-item {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: white;
+      padding: 12px 14px;
+      border-radius: 8px;
+      margin-bottom: 10px;
+      border: 1px solid #e2e8f0;
+      font-size: 0.95rem;
+    }
+    .btn-delete-fault, .btn-delete-station {
+      background: none;
+      border: none;
+      color: var(--danger);
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 0.85rem;
+      padding: 8px 14px;
+      border-radius: 8px;
+      transition: all 0.2s;
+      background: var(--danger-light);
+    }
+    .btn-delete-fault:hover, .btn-delete-station:hover {
+      background: var(--danger);
+      color: white;
+    }
 
     @media print {
-      body { background: white; padding: 0; }
-      .container { box-shadow: none; max-width: 100%; padding: 0; }
-      .header-card, .filter-card, .actions-row, .refresh-btn, .network-status-bar, .toast-container, .modal-overlay { display: none !important; }
-      th { background: #eee !important; color: black !important; }
-      td, th { border: 1px solid #ccc !important; }
+      body { background: white; padding: 0; color: black; }
+      .container { box-shadow: none; max-width: 100%; padding: 0; border: none; }
+      .header-card, .filter-card, .actions-row, .refresh-btn, .edit-table-btn, .network-status-bar, .toast-container, .modal-overlay { display: none !important; }
+      th { background: #f1f5f9 !important; color: #0b4b66 !important; padding: 12px !important; }
+      td { padding: 12px !important; border: 1px solid #cbd5e1 !important; }
+      .station-name-td { font-size: 1.15rem !important; background: #f8fafc !important; border: 1px solid #cbd5e1 !important; }
+      .fault-item-box { border: 1px solid #cbd5e1 !important; padding: 10px !important; box-shadow: none !important; background: white !important; page-break-inside: avoid; }
+      .fault-details-text { background: #ffffff !important; border: 1px solid #cbd5e1 !important; border-right: 4px solid #1d74b3 !important; }
+      @page { size: A4; margin: 1.5cm 1cm 1.5cm 1cm; }
     }
   </style>
 </head>
@@ -464,7 +575,10 @@
         <p>استقبال ومتابعة تقارير أعطال توشكى</p>
       </div>
     </div>
-    <button class="refresh-btn" id="refreshBtn">🔄 تحديث البيانات</button>
+    <div class="header-actions">
+      <button class="edit-table-btn" id="editTableBtn" disabled>✏️ تعديل الجدول</button>
+      <button class="refresh-btn" id="refreshBtn">🔄 تحديث البيانات</button>
+    </div>
   </div>
 
   <div class="filter-card">
@@ -489,7 +603,7 @@
       <thead>
         <tr>
           <th style="text-align: center;">المحطة</th>
-          <th>الأعطال المسجلة والملاحظات </th>
+          <th>الأعطال المسجلة والملاحظات</th>
         </tr>
       </thead>
       <tbody id="faultsTableBody">
@@ -505,8 +619,9 @@
 
 <div class="modal-overlay" id="deleteConfirmModal">
   <div class="modal-card">
+    <button class="modal-close-top" id="btnCloseDeleteConfirmModal">×</button>
     <span class="modal-icon">⚠️</span>
-    <div class="modal-title" id="modalTitle">تنبيه حرج جداً!</div>
+    <div class="modal-title">تنبيه حرج جداً!</div>
     <div class="modal-desc" id="modalDesc">هل أنت متأكد من رغبتك في حذف جميع بلاغات الأعطال الخاصة بالزونة المحددة نهائياً من قاعدة البيانات؟ لا يمكن التراجع عن هذا الإجراء مطلقاً بعد إتمامه.</div>
     <div class="modal-actions">
       <button class="btn-modal-confirm" id="btnConfirmDeleteAction">نعم، احذف السجلات</button>
@@ -517,11 +632,25 @@
 
 <div class="modal-overlay" id="successModal">
   <div class="modal-card">
-    <span class="modal-icon">🗑️</span>
     <div class="modal-title">تم الحذف بنجاح</div>
     <div class="modal-desc">تم تفريغ وحذف جميع سجلات البلاغات للنطاق المحدد من السيرفر بنجاح، وتحديث شاشة المشرف.</div>
     <div class="modal-actions">
       <button class="btn-modal-success" id="btnSuccessClose">موافق</button>
+    </div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="editTableModal">
+  <div class="modal-card" style="max-width: 700px; text-align: right;">
+    <button class="modal-close-top" id="btnXCloseEditModal">×</button>
+    <span class="modal-icon">✏️</span>
+    <div class="modal-title">تعديل بيانات الجدول</div>
+    <div class="modal-desc">يمكنك حذف محطة كاملة بجميع أعطالها، أو حذف عطل محدد من محطة. <br><span style="color: var(--danger); font-weight: 600;">⚠️ الحذف نهائي ولا يمكن التراجع عنه.</span></div>
+    <div id="editTableContent" style="max-height: 50vh; overflow-y: auto; padding: 8px 0;">
+      <p style="text-align: center; color: var(--text-muted);">جاري تحميل البيانات...</p>
+    </div>
+    <div class="modal-actions" style="margin-top: 16px;">
+      <button class="btn-modal-cancel" id="btnCloseEditModal">إغلاق</button>
     </div>
   </div>
 </div>
@@ -532,7 +661,7 @@
     let selectedZone = null;
     let fetchedDataRaw = [];
     let isInitialLoadFinished = false;
-    let isServerConnected = true; // متغير لتتبع حالة الإنترنت لحظياً وضمان التحصين
+    let isServerConnected = true;
 
     const firebaseConfig = {
       apiKey: "AIzaSyAZcnYu67KXLnGIbENQxu5_ZkJ0MfpoARk",
@@ -557,19 +686,25 @@
     const exportExcelBtn = document.getElementById('exportExcelBtn');
     const printBtn = document.getElementById('printBtn');
     const deleteBtn = document.getElementById('deleteBtn');
+    const editTableBtn = document.getElementById('editTableBtn');
     const refreshBtn = document.getElementById('refreshBtn');
     const statusBox = document.getElementById('statusBox');
     const networkStatusBar = document.getElementById('networkStatusBar');
     const networkStatusText = document.getElementById('networkStatusText');
     const toastContainer = document.getElementById('toastContainer');
 
-    // عناصر الـ Modals الجديدة
+    // عناصر الـ Modals
     const deleteConfirmModal = document.getElementById('deleteConfirmModal');
     const successModal = document.getElementById('successModal');
+    const editTableModal = document.getElementById('editTableModal');
     const modalDesc = document.getElementById('modalDesc');
     const btnConfirmDeleteAction = document.getElementById('btnConfirmDeleteAction');
     const btnCancelDeleteAction = document.getElementById('btnCancelDeleteAction');
     const btnSuccessClose = document.getElementById('btnSuccessClose');
+    const btnCloseEditModal = document.getElementById('btnCloseEditModal');
+    const btnXCloseEditModal = document.getElementById('btnXCloseEditModal');
+    const btnCloseDeleteConfirmModal = document.getElementById('btnCloseDeleteConfirmModal');
+    const editTableContent = document.getElementById('editTableContent');
 
     function showStatus(text, type) {
       statusBox.textContent = text;
@@ -667,13 +802,12 @@
       });
     }
 
-    // كائن عالمي لحفظ مجموعات المحطات الجاهزة للتصدير منسقة
     let activeStationsGroup = {};
 
     function loadFaultsForZone() {
       if (!selectedZone) return;
       
-      showStatus('⏳ جاري جلب ومزامنة أحدث تقارير الأعطال  ...', 'info');
+      showStatus('⏳ جاري جلب ومزامنة أحدث تقارير الأعطال...', 'info');
       faultsTableBody.innerHTML = '<tr><td colspan="2" class="no-data">جاري تحميل البيانات...</td></tr>';
       
       db.ref('faultsLog').orderByChild('zone').equalTo(selectedZone).once('value', (snapshot) => {
@@ -699,6 +833,7 @@
           if (Array.isArray(data.faults)) {
             data.faults.forEach(f => {
               activeStationsGroup[station].push({
+                dbKey: key,
                 type: f.type,
                 pump: f.pump,
                 notes: f.notes,
@@ -747,32 +882,29 @@
       exportExcelBtn.disabled = !enabled;
       printBtn.disabled = !enabled;
       deleteBtn.disabled = !enabled;
+      editTableBtn.disabled = !enabled;
     }
 
-    // تصدير متطور وذكي مدمج الخلايا ومحصن ضد انقطاع الشبكة
+    // --- وظائف التصدير والطباعة ---
     exportExcelBtn.addEventListener('click', () => {
-      // أولاً: تحصين ضد انقطاع الشبكة أثناء محاولة التصدير
       if (!isServerConnected && fetchedDataRaw.length === 0) {
-        showStatus('❌ لا يمكن تحميل الملف؛ يرجى التحقق من اتصالك بالإنترنت أولاً ومزامنة البيانات.', 'error');
+        showStatus('❌ لا يمكن تحميل الملف؛ يرجى التحقق من اتصالك بالإنترنت أولاً.', 'error');
         return;
       }
       
       if (Object.keys(activeStationsGroup).length === 0) return;
 
-      // بناء مصفوفة البيانات ثنائية الأبعاد لـ Excel مدمجة ومنسقة بدون عمود الزونة
       const excelRows = [
         ["اسم المحطة", "نوع العطل", "المكون / رقم الطلمبة", "المشاكل والأعطال", "التاريخ والوقت"]
       ];
-
       const merges = [];
-      let currentExcelRowIndex = 1; // السطر الأول index 0 هو الهيدر، لذا نبدأ من 1
+      let currentExcelRowIndex = 1;
 
       Object.keys(activeStationsGroup).sort().forEach(stationName => {
         const faultsList = activeStationsGroup[stationName];
         const totalFaults = faultsList.length;
 
         if (totalFaults > 1) {
-          // دمج خلايا اسم المحطة (من الصف الحالي إلى نهاية عدد أعطال نفس المحطة) في العمود الأول (0)
           merges.push({
             s: { r: currentExcelRowIndex, c: 0 },
             e: { r: currentExcelRowIndex + totalFaults - 1, c: 0 }
@@ -780,7 +912,6 @@
         }
 
         faultsList.forEach((fault, index) => {
-          // في حال دمج الخلايا، نضع اسم المحطة في أول خلية فقط، والخلية التالية فارغة مدمجة
           excelRows.push([
             index === 0 ? stationName : "", 
             fault.type,
@@ -793,33 +924,18 @@
         currentExcelRowIndex += totalFaults;
       });
 
-      // تحويل المصفوفة إلى Worksheet
       const worksheet = XLSX.utils.aoa_to_sheet(excelRows);
-      
-      // تطبيق الدمج الذكي إذا وجد
-      if (merges.length > 0) {
-        worksheet['!merges'] = merges;
-      }
-
-      // ضبط المحاذاة والاتجاه إلى اليمين RTL
+      if (merges.length > 0) worksheet['!merges'] = merges;
       if (!worksheet['!views']) worksheet['!views'] = [{}];
       worksheet['!views'][0].RTL = true;
-
-      // ضبط عرض الأعمدة تلقائياً ليكون مظهر الملف احترافي ومنظم
       worksheet['!cols'] = [
-        { wch: 25 }, // اسم المحطة
-        { wch: 15 }, // نوع العطل
-        { wch: 22 }, // المكون
-        { wch: 45 }, // المشاكل والأعطال
-        { wch: 18 }  // التاريخ والوقت
+        { wch: 25 }, { wch: 15 }, { wch: 22 }, { wch: 45 }, { wch: 18 }
       ];
 
       const workbook = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(workbook, worksheet, "تقرير الأعطال");
       
-      // استخراج اسم الزونة الحالي للملف
-      const readableZoneFile = selectedZone.replace('Zone_', '').replace('_', ' ');
-      XLSX.writeFile(workbook, `اعطال_توشكى_Zone_${readableZoneNameToFile(selectedZone)}.xlsx`);
+      XLSX.writeFile(workbook, `اعطال_زونة_${readableZoneNameToFile(selectedZone)}.xlsx`);
     });
 
     function readableZoneNameToFile(zone) {
@@ -827,8 +943,23 @@
       return zone.replace('Zone_', '');
     }
 
-    printBtn.addEventListener('click', () => { window.print(); });
+    // تعديل عنوان الصفحة وطريقة الاستدعاء لضمان استجابة المتصفحات لتسمية ملف الـ PDF باسم الزونة
+    printBtn.addEventListener('click', () => {
+      const originalTitle = document.title;
+      const zonePrintName = selectedZone ? selectedZone.replace('Zone_', '').replace('_', ' ') : 'تقرير';
+      let finalName = zonePrintName;
+      if (selectedZone === 'Zone_O2dashO6') finalName = 'O2_O6';
+      
+      // التغيير الحاسم للعنوان البرمجي للمستند لإجبار محرك حفظ الـ PDF على كتابة اسم الزونة
+      document.title = `أعطال زونة ${finalName}`;
+      
+      window.print();
+      
+      // إعادة العنوان الأصلي للصفحة للحفاظ على الواجهة الأساسية
+      setTimeout(() => { document.title = originalTitle; }, 300);
+    });
 
+    // --- حذف الزونة بالكامل ---
     deleteBtn.addEventListener('click', () => {
       if (fetchedDataRaw.length === 0) return;
       
@@ -839,6 +970,10 @@
     });
 
     btnCancelDeleteAction.addEventListener('click', () => {
+      deleteConfirmModal.classList.remove('show');
+    });
+
+    btnCloseDeleteConfirmModal.addEventListener('click', () => {
       deleteConfirmModal.classList.remove('show');
     });
 
@@ -860,6 +995,144 @@
       successModal.classList.remove('show');
     });
 
+    // --- نافذة تعديل الجدول (حذف محطة أو عطل) ---
+    function renderEditModal() {
+      if (Object.keys(activeStationsGroup).length === 0) {
+        editTableContent.innerHTML = '<p style="text-align: center; color: var(--text-muted);">لا توجد بيانات لعرضها.</p>';
+        return;
+      }
+
+      let html = '';
+      Object.keys(activeStationsGroup).sort().forEach(stationName => {
+        const faultsList = activeStationsGroup[stationName];
+        html += `
+          <div class="edit-station-block">
+            <div class="edit-station-header">
+              <span>📍 ${stationName}</span>
+              <button class="btn-delete-station" data-station="${stationName}">🗑️ حذف المحطة بالكامل</button>
+            </div>
+        `;
+        faultsList.forEach((fault, idx) => {
+          html += `
+            <div class="edit-fault-item">
+              <div>
+                <span class="fault-tag ${fault.type.includes('كهربائي') ? 'tag-elec' : (fault.type.includes('ميكانيكي') ? 'tag-mech' : 'tag-other')}" style="font-size:0.8rem;">${fault.type}</span>
+                <strong>${fault.pump}</strong> - ${fault.notes.substring(0, 40)}...
+              </div>
+              <button class="btn-delete-fault" data-station="${stationName}" data-fault-index="${idx}">❌ حذف العطل</button>
+            </div>
+          `;
+        });
+        html += `</div>`;
+      });
+      editTableContent.innerHTML = html;
+
+      // إضافة أحداث الحذف
+      document.querySelectorAll('.btn-delete-station').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const station = e.target.getAttribute('data-station');
+          deleteStationCompletely(station);
+        });
+      });
+
+      document.querySelectorAll('.btn-delete-fault').forEach(btn => {
+        btn.addEventListener('click', (e) => {
+          const station = e.target.getAttribute('data-station');
+          const faultIndex = parseInt(e.target.getAttribute('data-fault-index'));
+          deleteSpecificFault(station, faultIndex);
+        });
+      });
+    }
+
+    async function deleteStationCompletely(stationName) {
+      if (!confirm(`هل أنت متأكد من حذف جميع أعطال محطة "${stationName}" بشكل نهائي؟`)) return;
+      
+      const keysToDelete = [];
+      fetchedDataRaw.forEach(item => {
+        if ((item.data.station || 'غير محدد') === stationName) {
+          keysToDelete.push(item.key);
+        }
+      });
+
+      if (keysToDelete.length === 0) return;
+
+      showStatus(`⏳ جاري حذف محطة ${stationName}...`, 'info');
+      try {
+        const promises = keysToDelete.map(key => db.ref('faultsLog').child(key).remove());
+        await Promise.all(promises);
+        showStatus(`✅ تم حذف محطة ${stationName} بنجاح.`, 'success');
+        loadFaultsForZone();
+        renderEditModal(); // تحديث النافذة المنبثقة
+      } catch (err) {
+        showStatus('❌ خطأ أثناء الحذف: ' + err.message, 'error');
+      }
+    }
+
+    async function deleteSpecificFault(stationName, faultIndex) {
+      if (!confirm(`هل أنت متأكد من حذف هذا العطل المحدد من محطة "${stationName}"؟`)) return;
+
+      // البحث عن السجل الذي يحتوي هذا العطل
+      let targetKey = null;
+      let targetFaults = [];
+
+      for (let item of fetchedDataRaw) {
+        if ((item.data.station || 'غير محدد') === stationName && Array.isArray(item.data.faults)) {
+          // التحقق من تطابق العطل عبر الفهرس المحفوظ في activeStationsGroup
+          const stationFaultsInGroup = activeStationsGroup[stationName];
+          if (stationFaultsInGroup && stationFaultsInGroup[faultIndex]) {
+            // نبحث عن السجل الذي يحتوي هذا العطل بالضبط
+            const faultToDelete = stationFaultsInGroup[faultIndex];
+            const match = item.data.faults.find(f => 
+              f.type === faultToDelete.type && 
+              f.pump === faultToDelete.pump && 
+              f.notes === faultToDelete.notes
+            );
+            if (match) {
+              targetKey = item.key;
+              targetFaults = item.data.faults.filter(f => !(f.type === match.type && f.pump === match.pump && f.notes === match.notes));
+              break;
+            }
+          }
+        }
+      }
+
+      if (!targetKey) {
+        showStatus('❌ لم يتم العثور على العطل المحدد.', 'error');
+        return;
+      }
+
+      showStatus('⏳ جاري حذف العطل...', 'info');
+      try {
+        if (targetFaults.length === 0) {
+          // إذا لم يتبق أعطال، نحذف السجل بالكامل
+          await db.ref('faultsLog').child(targetKey).remove();
+        } else {
+          // تحديث السجل مع إزالة العطل المحذوف
+          await db.ref('faultsLog').child(targetKey).update({ faults: targetFaults });
+        }
+        showStatus('✅ تم حذف العطل بنجاح.', 'success');
+        loadFaultsForZone();
+        renderEditModal();
+      } catch (err) {
+        showStatus('❌ خطأ أثناء الحذف: ' + err.message, 'error');
+      }
+    }
+
+    editTableBtn.addEventListener('click', () => {
+      renderEditModal();
+      editTableModal.classList.add('show');
+    });
+
+    // إغلاق النافذة من خلال زر الإغلاق السفلي
+    btnCloseEditModal.addEventListener('click', () => {
+      editTableModal.classList.remove('show');
+    });
+
+    // ربط علامة الـ X العلوية لإغلاق قائمة التعديل بنجاح وبدون أخطاء
+    btnXCloseEditModal.addEventListener('click', () => {
+      editTableModal.classList.remove('show');
+    });
+
     refreshBtn.addEventListener('click', () => {
       if (!selectedZone) {
         showStatus('⚠️ الرجاء اختيار زونة أولاً ليتم تحديث بياناتها.', 'error');
@@ -868,6 +1141,7 @@
       loadFaultsForZone();
     });
 
+    // بدء التشغيل
     renderZoneOptions();
     monitorNetwork();
     listenForLiveFaults();
